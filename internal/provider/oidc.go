@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/coreos/go-oidc"
 	"golang.org/x/oauth2"
@@ -89,6 +90,10 @@ func (o *OIDC) GetUser(token string) (User, error) {
 	if err != nil {
 		return user, err
 	}
+
+	var t map[string]interface{}
+	idToken.Claims(&t)
+	fmt.Printf("%v\n", t)
 
 	// Extract custom claims
 	if err := idToken.Claims(&user); err != nil {
