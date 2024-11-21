@@ -44,6 +44,10 @@ type Config struct {
 	Providers provider.Providers `group:"providers" namespace:"providers" env-namespace:"PROVIDERS"`
 	Rules     map[string]*Rule   `long:"rule.<name>.<param>" description:"Rule definitions, param can be: \"action\", \"rule\" or \"provider\""`
 
+	ForwardUserHeaderName     string `long:"forward-user-header-name" env:"FORWARD_USER_HEADER_NAME" description:"Header name to forward user claims to"`
+	ForwardEmailHeaderName    string `long:"forward-email-header-name" env:"FORWARD_EMAIL_HEADER_NAME" description:"Header name to forward email claims to"`
+	ForwardFullNameHeaderName string `long:"forward-fullname-header-name" env:"FORWARD_FULLNAME_HEADER_NAME" description:"Header name to forward fullname claims to"`
+
 	// Filled during transformations
 	Secret   []byte `json:"-"`
 	Lifetime time.Duration

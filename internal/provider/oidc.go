@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/coreos/go-oidc"
 	"golang.org/x/oauth2"
@@ -11,9 +10,12 @@ import (
 
 // OIDC provider
 type OIDC struct {
-	IssuerURL    string `long:"issuer-url" env:"ISSUER_URL" description:"Issuer URL"`
-	ClientID     string `long:"client-id" env:"CLIENT_ID" description:"Client ID"`
-	ClientSecret string `long:"client-secret" env:"CLIENT_SECRET" description:"Client Secret" json:"-"`
+	IssuerURL                  string `long:"issuer-url" env:"ISSUER_URL" description:"Issuer URL"`
+	ClientID                   string `long:"client-id" env:"CLIENT_ID" description:"Client ID"`
+	ClientSecret               string `long:"client-secret" env:"CLIENT_SECRET" description:"Client Secret" json:"-"`
+	ForwardUserClaimsField     string `long:"forward-user-claims-field" env:"FORWARD_USER_CLAIMS_FIELD" description:"Field to forward from user claims to headers"`
+	ForwardEmailClaimsField    string `long:"forward-email-claims-field" env:"FORWARD_EMAIL_CLAIMS_FIELD" description:"Field to forward from email claims to headers"`
+	ForwardFullNameClaimsField string `long:"forward-fullname-claims-field" env:"FORWARD_FULLNAME_CLAIMS_FIELD" description:"Field to forward from fullname claims to headers"`
 
 	OAuthProvider
 
@@ -92,12 +94,19 @@ func (o *OIDC) GetUser(token string) (User, error) {
 	}
 
 	var t map[string]interface{}
-	idToken.Claims(&t)
-	fmt.Printf("%v\n", t)
-
-	// Extract custom claims
-	if err := idToken.Claims(&user); err != nil {
+	if err = idToken.Claims(&t); err != nil {
 		return user, err
+	}
+	if o.ForwardEmailClaimsField != "" {
+		user.Email = t[o.ForwardEmailClaimsField].(string)
+	} else {
+		user.Email = t["email"].(string)
+	}
+	if o.ForwardFullNameClaimsField != "" {
+		user.FullName = t[o.ForwardFullNameClaimsField].(string)
+	}
+	if o.ForwardUserClaimsField != "" {
+		user.User = t[o.ForwardUserClaimsField].(string)
 	}
 
 	return user, nil
